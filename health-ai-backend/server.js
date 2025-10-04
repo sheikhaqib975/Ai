@@ -1,4 +1,4 @@
-// server.js - Backend API for Health AI Assistant
+// server.js - Backend API for Health AI Assistant (Production Ready)
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -6,19 +6,40 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration for production
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*', // Set your frontend URL in production
+  methods: ['GET', 'POST'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
 // Middleware
-app.use(cors()); // Enable CORS for frontend requests
-app.use(express.json()); // Parse JSON bodies
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
+
+// Trust proxy for deployment platforms like Render, Heroku, etc.
+app.set('trust proxy', 1);
 
 // Health check endpoint
 app.get('/', (req, res) => {
   res.json({ 
     status: 'running',
     message: 'Health AI Assistant API Server',
+    version: '1.0.0',
     endpoints: {
       health: 'GET /',
       chat: 'POST /api/chat'
     }
+  });
+});
+
+// Additional health check for monitoring services
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
 });
 
@@ -34,11 +55,20 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
+    // Message length validation
+    if (message.length > 2000) {
+      return res.status(400).json({
+        error: 'Message too long',
+        details: 'Please keep your message under 2000 characters'
+      });
+    }
+
     // Check if API key is configured
     if (!process.env.GROQ_API_KEY) {
+      console.error('GROQ_API_KEY is not configured');
       return res.status(500).json({ 
-        error: 'Server configuration error: GROQ_API_KEY not set',
-        setup: 'Please add GROQ_API_KEY to your .env file'
+        error: 'Server configuration error',
+        details: 'AI service is not properly configured'
       });
     }
 
@@ -69,13 +99,12 @@ app.post('/api/chat', async (req, res) => {
 
     // Handle API errors
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Groq API Error:', errorData);
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Groq API Error:', response.status, errorData);
       
       return res.status(response.status).json({
-        error: 'AI service error',
-        details: errorData.error?.message || 'Unknown error occurred',
-        status: response.status
+        error: 'AI service temporarily unavailable',
+        details: 'Please try again in a moment'
       });
     }
 
@@ -87,28 +116,36 @@ app.post('/api/chat', async (req, res) => {
         success: true,
         message: data.choices[0].message.content,
         model: data.model,
-        usage: data.usage
+        timestamp: new Date().toISOString()
       });
     } else {
       throw new Error('Invalid API response format');
     }
 
   } catch (error) {
-    console.error('Server Error:', error);
+    console.error('Server Error:', error.message);
     
     // Handle different error types
-    if (error.message.includes('fetch')) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
       return res.status(503).json({
         error: 'Unable to reach AI service',
-        details: 'Please check your internet connection and try again'
+        details: 'Service temporarily unavailable. Please try again.'
       });
     }
     
     res.status(500).json({
       error: 'Internal server error',
-      details: error.message
+      details: 'Something went wrong. Please try again later.'
     });
   }
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested endpoint does not exist'
+  });
 });
 
 // Error handling middleware
@@ -116,12 +153,20 @@ app.use((err, req, res, next) => {
   console.error('Unhandled Error:', err);
   res.status(500).json({
     error: 'Something went wrong',
-    details: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    details: 'Internal server error'
+  });
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
   });
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`
 ╔════════════════════════════════════════════╗
 ║   Health AI Assistant API Server          ║
@@ -132,6 +177,7 @@ app.listen(PORT, () => {
 
 Endpoints:
   - GET  /           → Health check
+  - GET  /health     → Service health
   - POST /api/chat   → AI chat endpoint
 
 GROQ API Key: ${process.env.GROQ_API_KEY ? '✓ Configured' : '✗ Missing'}
@@ -139,6 +185,6 @@ GROQ API Key: ${process.env.GROQ_API_KEY ? '✓ Configured' : '✗ Missing'}
   
   if (!process.env.GROQ_API_KEY) {
     console.warn('\n⚠️  WARNING: GROQ_API_KEY not found in environment variables!');
-    console.warn('   Please create a .env file with: GROQ_API_KEY=your_api_key_here\n');
+    console.warn('   The API will not work without it.\n');
   }
 });
