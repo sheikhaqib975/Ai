@@ -83,7 +83,9 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
   };
 
   // Backend API Configuration
-  const API_BASE_URL = 'http://localhost:5000';
+ const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '' // Empty string for production (uses same domain)
+  : 'http://localhost:5000'; // localhost for development
 
   // Call Backend API for health analysis
   const callBackendAPI = async (userMessage) => {
