@@ -44,17 +44,16 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
       </svg>
     ),
     Brain: () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="4" y="8" width="16" height="12" rx="2" />
-    <path d="M12 2v6" />
-    <circle cx="12" cy="2" r="1" />
-    <path d="M8 12h0.01" />
-    <path d="M16 12h0.01" />
-    <path d="M9 16h6" />
-    <path d="M4 16h-2" />
-    <path d="M22 16h-2" />
-  </svg>
-
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="4" y="8" width="16" height="12" rx="2" />
+        <path d="M12 2v6" />
+        <circle cx="12" cy="2" r="1" />
+        <path d="M8 12h0.01" />
+        <path d="M16 12h0.01" />
+        <path d="M9 16h6" />
+        <path d="M4 16h-2" />
+        <path d="M22 16h-2" />
+      </svg>
     ),
     Send: () => (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -83,9 +82,9 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
   };
 
   // Backend API Configuration
- const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '' // Empty string for production (uses same domain)
-  : 'http://localhost:5000'; // localhost for development
+  const API_BASE_URL = process.env.NODE_ENV === 'production' 
+    ? '' 
+    : 'http://localhost:5000';
 
   // Call Backend API for health analysis
   const callBackendAPI = async (userMessage) => {
@@ -302,6 +301,8 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
           left: 0;
           right: 0;
           bottom: 0;
+          width: 100vw;
+          height: 100vh;
           background-color: rgba(0, 0, 0, 0.95);
           backdrop-filter: blur(10px);
           z-index: 9999;
@@ -309,6 +310,7 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
           align-items: center;
           justify-content: center;
           padding: 0;
+          margin: 0;
           animation: fadeIn 0.2s ease-out;
         }
 
@@ -319,8 +321,8 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
 
         .chat-container {
           width: 100%;
-          height: 100vh;
-          max-width: 1200px;
+          height: 100%;
+          max-width: 100%;
           max-height: 100%;
           background-color: rgba(10, 10, 15, 0.98);
           backdrop-filter: blur(20px);
@@ -341,21 +343,6 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
           }
         }
 
-        /* Desktop styles */
-        @media (min-width: 768px) {
-          .chat-overlay {
-            padding: 12px;
-          }
-
-          .chat-container {
-            max-width: 1200px;
-            height: 85vh;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-          }
-        }
-
         /* Header */
         .chat-header {
           background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2));
@@ -369,7 +356,7 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
 
         @media (min-width: 768px) {
           .chat-header {
-            padding: 20px 28px;
+            padding: 20px 32px;
           }
         }
 
@@ -419,7 +406,7 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
 
         @media (min-width: 768px) {
           .header-title {
-            font-size: 18px;
+            font-size: 20px;
           }
         }
 
@@ -470,7 +457,7 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
         .chat-messages {
           flex: 1;
           overflow-y: auto;
-          padding: 16px;
+          padding: 16px 20px;
           display: flex;
           flex-direction: column;
           gap: 16px;
@@ -478,8 +465,14 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
 
         @media (min-width: 768px) {
           .chat-messages {
-            padding: 24px;
+            padding: 32px;
             gap: 20px;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .chat-messages {
+            padding: 32px 80px;
           }
         }
 
@@ -506,6 +499,12 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
             padding: 18px 20px;
             border-radius: 20px;
             max-width: 75%;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .message {
+            max-width: 65%;
           }
         }
 
@@ -613,13 +612,19 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
         .chat-input-section {
           background-color: rgba(255, 255, 255, 0.05);
           border-top: 1px solid rgba(16, 185, 129, 0.2);
-          padding: 16px;
+          padding: 16px 20px;
           flex-shrink: 0;
         }
 
         @media (min-width: 768px) {
           .chat-input-section {
-            padding: 20px 24px;
+            padding: 20px 32px;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .chat-input-section {
+            padding: 24px 80px;
           }
         }
 
@@ -781,4 +786,38 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
   );
 };
 
-export default AIHealthChatBot;
+// Demo wrapper to show the chatbot
+const App = () => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <div style={{ width: '100vw', height: '100vh', background: '#0a0a0f' }}>
+      <button 
+        onClick={() => setIsOpen(true)}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          padding: '16px 24px',
+          background: 'linear-gradient(45deg, #10b981, #059669)',
+          border: 'none',
+          borderRadius: '12px',
+          color: '#ffffff',
+          fontWeight: '600',
+          cursor: 'pointer',
+          zIndex: 9998,
+          display: isOpen ? 'none' : 'block'
+        }}
+      >
+        Open CareBot
+      </button>
+      <AIHealthChatBot 
+        isOpen={isOpen} 
+        onClose={() => setIsOpen(false)} 
+        userName="John Doe"
+      />
+    </div>
+  );
+};
+
+export default App;
