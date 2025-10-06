@@ -308,7 +308,7 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
           display: ${isOpen ? 'flex' : 'none'};
           align-items: center;
           justify-content: center;
-          padding: 0;
+          
           animation: fadeIn 0.2s ease-out;
         }
 
@@ -319,7 +319,7 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
 
         .chat-container {
           width: 100%;
-          height: 100vh;
+          height: 100%;
           max-width: 1200px;
           max-height: 100%;
           background-color: rgba(10, 10, 15, 0.98);
@@ -348,8 +348,8 @@ const AIHealthChatBot = ({ isOpen, onClose, userName }) => {
           }
 
           .chat-container {
-            max-width: 1200px;
-            height: 85vh;
+            width:100%;
+            height: 100%;
             border: 1px solid rgba(16, 185, 129, 0.3);
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
